@@ -7,9 +7,10 @@ vector<vector<bool>> check(250,vector<bool>(250,false));
 vector<vector<char>> ma(250,vector<char>(250,' '));
 vector<string> s(2000);
 vector<int> sn(2000,0);
+vector<pair<int,int>> go(2000);
 vector<vector<pair<int,int>>> sr(2000,vector<pair<int,int>>(0));
 vector<pair<int,int>> ss(2000);
-vector<int> su(2000,0);
+vector<bool> su(2000,false);
 void dfs(int y,int x);
 void sdfs(int y,int x);
 signed main(){
@@ -17,19 +18,18 @@ signed main(){
     ios_base::sync_with_stdio(false);
     cin>>n;
     vector<int> y(n),x(n);
-    for(int i=0;i<n;i++){
+    for(int i=0;i<n;++i){
         cin>>y[i]>>x[i];
         y[i]--;
         x[i]--;
         ma[y[i]][x[i]]='#';
     }
     cin>>m;
-    vector<vector<bool>> er(2000,vector<bool>(500000,0));
-    for(int i=0;i<m;i++){
+    for(int i=0;i<m;++i){
         cin>>s[i];
         sn[i]=s[i].size();
         int ry=0,rx=0;
-        for(int j=0;j<s[i].size();j++){
+        for(int j=0;j<s[i].size();++j){
             if(s[i][j]=='U'){
                 ry--;
             }else if(s[i][j]=='D'){
@@ -39,35 +39,35 @@ signed main(){
             }else if(s[i][j]=='R'){
                 rx++;
             }
-            for(int k=0;k<sr[i].size();k++){
-                if(sr[i][k].first==ry&&sr[i][k].second==rx){
-                    er[i][k]=true;
-                }
-            }
             sr[i].push_back(make_pair(ry,rx));
+            if(j==s[i].size()-1){
+                go[i].first=ry;
+                go[i].second=rx;
+            }
         }
-        for(int j=sn[i]-1;j>=0;j--){
-            if(er[i][j]==true||(sr[i][j].first==0&&sr[i][j].second==0)){
-                sr[i].erase(sr[i].begin()+j,sr[i].begin()+j+1);
+        sort(sr[i].begin(),sr[i].begin()+s[i].size());
+        for(int j=s[i].size()-1;j>=1;--j){
+            if(sr[i][j].first==sr[i][j-1].first&&sr[i][j].second==sr[i][j-1].second){
+                sr[i].erase(sr[i].begin()+j-1,sr[i].begin()+j-1+1);
                 sn[i]--;
             }
         }
     }
-    for(int i=0;i<m;i++){
+    for(int i=0;i<m;++i){
         ss[i].first=sn[i];
         ss[i].second=i;
     }
     sort(ss.begin(),ss.begin()+m);
-    // for(int i=0;i<m;i++){
-    //     for(int j=0;j<sn[i];j++){
+    // for(int i=0;i<m;++i){
+    //     for(int j=0;j<sn[i];++j){
     //         cout<<sr[i][j].first<<' '<<sr[i][j].second<<'\n';
     //     }
     //     cout<<'\n';
     // }
     dfs(0,0);
     sdfs(0,0);
-    // for(int i=0;i<n;i++){
-    //     for(int j=0;j<n;j++){
+    // for(int i=0;i<n;++i){
+    //     for(int j=0;j<n;++j){
     //         if(check[i][j]==true){
     //             cout<<1;
     //         }else{
@@ -76,8 +76,8 @@ signed main(){
     //     }
     //     cout<<'\n';
     // }
-    for(int i=0;i<n;i++){
-        for(int j=0;j<n;j++){
+    for(int i=0;i<n;++i){
+        for(int j=0;j<n;++j){
             if(check[i][j]==true){
                 cout<<"NO\n";
                 return 0;
@@ -86,15 +86,15 @@ signed main(){
     }
     cout<<"YES\n";
     int mc=0;
-    for(int i=0;i<m;i++){
+    for(int i=0;i<m;++i){
         // cout<<su[i]<<" ";
-        if(su[i]>0){
+        if(su[i]==true){
             mc++;
         }
     }
     cout<<mc<<'\n';
-    for(int i=0;i<m;i++){
-        if(su[i]>0){
+    for(int i=0;i<m;++i){
+        if(su[i]==true){
             cout<<i+1<<' ';
         }
     }
@@ -103,7 +103,7 @@ signed main(){
 }
 void dfs(int y,int x){
     check[y][x]=true;
-    for(int i=0;i<4;i++){
+    for(int i=0;i<4;++i){
         int ny=y+dy[i],nx=x+dx[i];
         if(0<=ny&&ny<n&&0<=nx&&nx<n&&check[ny][nx]==false&&ma[ny][nx]!='#'){
             dfs(ny,nx);
@@ -113,9 +113,9 @@ void dfs(int y,int x){
 }
 void sdfs(int y,int x){
     check[y][x]=false;
-    for(int i=0;i<m;i++){
+    for(int i=0;i<m;++i){
         int j,ny,nx,i2=ss[i].second;
-        for(j=0;j<sn[i2];j++){
+        for(j=0;j<sn[i2];++j){
             ny=y;
             nx=x;
             ny+=sr[i2][j].first;
@@ -125,11 +125,11 @@ void sdfs(int y,int x){
                 break;
             }
         }
-        ny=y+sr[i2][sn[i2]-1].first;
-        nx=x+sr[i2][sn[i2]-1].second;
+        ny=y+go[i2].first;
+        nx=x+go[i2].second;
         if(j==sn[i2]&&0<=ny&&ny<n&&0<=nx&&nx<n&&check[ny][nx]==true){
             // cout<<ny<<"a"<<nx<<endl;
-            su[i2]++;
+            su[i2]=true;
             sdfs(ny,nx);
         }
     }
